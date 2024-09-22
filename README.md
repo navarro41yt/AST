@@ -2,6 +2,16 @@
 
 This project provides an automated solution for translating Android Studio strings.xml files into multiple languages.
 
+## Environment Setup
+
+1. **Clone the Repository:**
+   - Clone this repository to your local machine using `git clone https://github.com/navarro41yt/AST.git`.
+
+2. **Install Dependencies:**
+   - Create a virtual environment using `python -m venv venv` or install dependencies globally using `pip install -r requirements.txt`.
+   - Activate the virtual environment using `source venv/bin/activate` on Linux or `venv\Scripts\activate` on Windows.
+   - Install the required libraries using `pip install -r requirements.txt`.
+
 ## Usage
 
 1. **Prepare Input:**

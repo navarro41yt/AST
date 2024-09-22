@@ -1,4 +1,4 @@
-# Android Studio Strings Translator
+# Android Strings Translator
 
 This project provides an automated solution for translating Android Studio strings.xml files into multiple languages.
 
@@ -9,7 +9,7 @@ This project provides an automated solution for translating Android Studio strin
 
 2. **Define Languages:**
    - Edit [./input/languages.csv](./input/languages.csv) to specify the languages you want to translate to. Separate each language code with commas
-   - List of Possible values defined by the [ISO 639 (Set 1)](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes)
+   - List of Possible values defined by the [ISO 639 (Set 1)](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) (Some languages like chinese have multiple values, like zh-CN, zh-TW, etc.)
 
 3. **Run the Translation Script:**
    - Execute the `translate.py` script.

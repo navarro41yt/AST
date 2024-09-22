@@ -1,41 +1,100 @@
+from enum import Enum
+import os
+from typing import List
 import xml.etree.ElementTree as ET
+
 from googletrans import Translator
 
-translator = Translator()
+INPUT_FOLDER = 'input'
 
-# Languages located in ./input/languages.csv
-with open("input/languages.csv", "r") as file:
-    langs = file.read().split(",")
+INPUT_FILE = os.path.join(INPUT_FOLDER, 'input.xml')
+LANGUAGES_FILE = os.path.join(INPUT_FOLDER, 'languages.csv')
 
-for lang in langs:
-    # Create a file in output/ for each language
-    with open(f"output/{lang}.xml", "w") as file:
-        file.write("<resources>\n")
+OUTPUT_FOLDER = 'output'
 
-# XML string
-with open("input/input.xml", "r") as file:
-    xml_data = file.read()
+class LanguagesE(Enum):
+    es = 'Spanish'
+    ca = 'Catalan'
+    gl = 'Galician'
+    eu = 'Basque'
+    
+    en = 'English'
+    pt = 'Portuguese'
+    it = 'Italian'
+    fr = 'French'
+    de = 'German'
+    
+    ru = 'Russian'
+    
+    zh_CN = 'Chinese (Simplified)'
+    zh_TW = 'Chinese (Traditional)'
+    ja = 'Japanese'
+    ko = 'Korean'
+    
+    @classmethod
+    def get(cls, code: str) -> str:
+        normalized_code = code.replace('-', '_')
+        
+        try:
+            return cls[normalized_code].value
+        except KeyError:
+            return code
 
-# Parse the XML string
-root = ET.fromstring(xml_data)
 
-values: list[str] = []
+class StringTranslator:
 
-# Iterate through each 'string' element and print the name and text
-for lang in langs:
-    with open(f"output/{lang}.xml", "a", encoding='utf-8') as file:        
-        for e in root.findall('string'):
-            try:
-                if e.attrib['translatable'] == "false":
-                    continue
-            except:
-                pass
+    def __init__(self, input_file: str, languages_file: str, output_dir: str) -> None:
+        self.input_file = input_file
+        self.languages_file = languages_file
+        self.output_dir = output_dir
 
-            try:
-                tranlation = translator.translate(text=e.text, dest=lang, src="en").text.replace("'", "\\'")
-            except:
-                print(f"Unknown Language: {lang}")
-            out = f"<string name=\"{e.attrib['name']}\">{tranlation}</string>"
-            file.write(out + "\n")
+        self.translator = Translator()
+        self.langs = self._get_languages()
+        self.root = self._get_root()
 
-        file.write("</resources>")
+    def _get_languages(self) -> List[str]:
+        with open(self.languages_file, 'r') as file:
+            return file.read().split(',')
+
+    def _get_root(self) -> ET.Element:
+        with open(self.input_file, mode='r') as file:
+            xml_data = file.read()
+
+        return ET.fromstring(xml_data)
+
+    def _create_output_files(self) -> None:
+        for lang in self.langs:
+            lang_file = os.path.join(OUTPUT_FOLDER, f'{lang}.xml')
+            
+            with open(lang_file, mode='w') as file:
+                file.write('<resources>\n')
+
+    def translate(self) -> None:
+        self._create_output_files()
+
+        for lang in self.langs:
+            output_file = os.path.join(OUTPUT_FOLDER, f'{lang}.xml')
+            
+            with open(output_file, mode='a', encoding='utf-8') as file:
+                for e in self.root.findall('string'):
+                    tranlatable_attr = e.attrib.get('translatable')
+                    if tranlatable_attr == 'false':
+                        continue
+
+                    try:
+                        translation = self.translator.translate(
+                            text=e.text, dest=lang, src='en').text.replace("'", "\\'")
+                    except:
+                        print(f'Unknown Language: {lang}')
+                        break
+
+                    tranlation_string = f'<string name="{e.attrib['name']}">{translation}</string>'
+                    file.write(f'{tranlation_string}\n')
+                file.write('</resources>')
+
+            print(f'Translated "{LanguagesE.get(lang)}"')
+
+
+if __name__ == '__main__':
+    st = StringTranslator(INPUT_FILE, LANGUAGES_FILE, OUTPUT_FOLDER)
+    st.translate()
